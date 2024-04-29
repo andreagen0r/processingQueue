@@ -17,10 +17,8 @@ MyModel::MyModel(QObject *parent)
         auto it = std::find_if(m_data.cbegin(), m_data.cend(),[](ModelData* data){
             return data->selected == true;
         });
-        const bool out {it != m_data.cend()};
-        m_toProcessing = out;
+        m_toProcessing = {it != m_data.cend()};
         Q_EMIT toProcessingChanged();
-        return out;
     });
 }
 

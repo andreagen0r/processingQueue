@@ -47,6 +47,8 @@ public:
     QList<ModelData*> dataSource() const;
     void setDataSource(const QList<ModelData*> &newDataSource);
 
+    Q_INVOKABLE void clear();
+
 Q_SIGNALS:
     void dataSourceChanged();
 

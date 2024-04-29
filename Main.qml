@@ -150,6 +150,7 @@ ApplicationWindow {
         Button {
           Layout.fillWidth: true
           text: `Clear`
+          onClicked: queueModel.clear()
         }
       }
 

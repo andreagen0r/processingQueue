@@ -97,6 +97,15 @@ void ProcessingQueueModel::setDataSource(const QList<ModelData *> &newDataSource
     Q_EMIT dataSourceChanged();
 }
 
+void ProcessingQueueModel::clear()
+{
+    beginResetModel();
+    qDeleteAll(m_processingData);
+    m_processingData.clear();
+    endResetModel();
+    Q_EMIT dataSourceChanged();
+}
+
 void ProcessingQueueModel::heavyProcessingData()
 {
     qInfo() << "Processing data";
