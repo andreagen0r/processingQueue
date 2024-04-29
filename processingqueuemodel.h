@@ -10,6 +10,9 @@
 class ProgressData : public ModelData {
 
     Q_OBJECT
+    Q_PROPERTY(double progress READ getProgress WRITE setProgress NOTIFY progressChanged FINAL)
+    Q_PROPERTY(bool paused READ getPaused WRITE setPaused NOTIFY pausedChanged FINAL)
+
 public:
     ProgressData(QString title, int processTime, bool selected = false, double progress = 0, bool paused = false, QObject* parent = nullptr)
         : ModelData(title, processTime, selected, parent)
@@ -18,9 +21,45 @@ public:
     double progress;
     bool paused;
 
-    // QThread interface
+    bool getPaused() const
+    {
+        return paused;
+    }
+
+    void setPaused(bool newPaused)
+    {
+        if (paused == newPaused)
+            return;
+        paused = newPaused;
+        emit pausedChanged();
+    }
+
+    double getProgress() const
+    {
+        return progress;
+    }
+
+    void setProgress(double newProgress)
+    {
+        if (qFuzzyCompare(progress, newProgress))
+            return;
+        progress = newProgress;
+        emit progressChanged();
+    }
+
+signals:
+    void progressChanged();
+    void pausedChanged();
+
 protected:
-    void run() override;
+    void run() override
+    {
+        for (auto i = 0; i <= 100; ++i) {
+            setProgress(i);
+            thread()->sleep(processTime/100);
+        }
+    }
+
 };
 
 class ProcessingQueueModel : public QAbstractListModel

@@ -111,13 +111,9 @@ void ProcessingQueueModel::heavyProcessingData()
     qInfo() << "Processing data";
     for(auto i : m_processingData) {
         qInfo() << i->title << i->processTime;
-        moveToThread(std::move(i));
+        moveToThread(i);
     }
 }
 
-void ProgressData::run()
-{
-    for (auto i = 0; i <= 100; ++i) {
-        progress += i;
-    }
-}
+
+
