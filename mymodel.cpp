@@ -99,9 +99,13 @@ bool MyModel::toProcessing() const {
 
 void execute( ModelData *model ) {
 
+    model->setFinished( false );
+    model->setProcessing( false );
+    model->setProgress( 0.0 );
+
     if ( model->selected() ) {
 
-        qInfo() << model->title();
+        qInfo() << "EXECUTING" << model->title();
 
         model->setProcessing( true );
 
@@ -122,38 +126,33 @@ void MyModel::processing() {
     qInfo() << __PRETTY_FUNCTION__;
 
     for ( auto &i : m_data ) {
-        if ( i->isFinished() ) {
-            i->setFinished( false );
-        }
-    }
 
-    for ( auto &i : m_data ) {
+        disconnect( i );
 
+        // if ( i->selected() ) {
+        qInfo() << "STARTED:" << i->title();
 
-        if ( i->selected() ) {
-            qInfo() << "Selected:" << i->title();
+        // clang-format off
 
-            disconnect( i );
-            connect(
-                i, &ModelData::isProcessingChanged, this,
-                [&]() {
-                    beginResetModel();
-                    // qInfo() << "Processing....";
-                    endResetModel();
-                    Q_EMIT dataChanged( QModelIndex {}, QModelIndex {}, { MyRoles::Processing } );
-                },
-                Qt::QueuedConnection );
-
-            connect(
-                i, &ModelData::progressChanged, this,
-                [&]() {
+            connect( i, &ModelData::progressChanged, this, [&]() {
                     beginResetModel();
                     // qInfo() << "Progress..." << i->progress();
                     endResetModel();
-                    Q_EMIT dataChanged( QModelIndex {}, QModelIndex {}, { MyRoles::Progress } );
-                },
-                Qt::QueuedConnection );
-        }
+                    // Q_EMIT dataChanged( QModelIndex {}, QModelIndex {}, { MyRoles::Progress } );
+                }, Qt::QueuedConnection );
+
+            connect( i, &ModelData::isFinishedChanged, this, [&]() {
+                    qInfo() << "FINISHED" << i->title();
+                    beginResetModel();
+                    // i->setFinished( false );
+                    i->setProcessing( false );
+                    i->setProgress( 0 );
+                    endResetModel();
+                    // Q_EMIT dataChanged( QModelIndex {}, QModelIndex {}, { MyRoles::Progress, MyRoles::Finished, MyRoles::Progress } );
+                }, Qt::QueuedConnection );
+
+        // clang-format on
+        // }
     }
 
     auto future = QtConcurrent::map( m_data, execute );

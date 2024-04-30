@@ -139,7 +139,7 @@ ApplicationWindow {
                 from: 0
                 to: 100
                 value: model.progress
-                onValueChanged: console.log(value)
+                // onValueChanged: console.log(value)
               }
               Button {
                 Layout.preferredWidth: implicitHeight
