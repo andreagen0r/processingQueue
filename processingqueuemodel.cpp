@@ -63,21 +63,14 @@ bool ProcessingQueueModel::setData(const QModelIndex &index, const QVariant &val
 
     const auto row {index.row()};
 
-    bool out {false};
-
     switch (static_cast<ProcessingRoles>(role)) {
     case Paused:
         m_processingData[row]->setPaused( value.toBool());
         Q_EMIT dataChanged(index, index, {static_cast<int>(ProcessingRoles::Paused)});
-        out = true;
+        return true;
         break;
     default:
         break;
-    }
-
-    if (out) {
-        // Q_EMIT dataChanged(index, index);
-        return true;
     }
 
     return {};
@@ -90,10 +83,6 @@ QList<ModelData *> ProcessingQueueModel::dataSource() const
 
 void ProcessingQueueModel::setDataSource(const QList<ModelData *> &newDataSource)
 {
-    /*
-     * Toda vez que o dataSource atualizar eu faço o reset do model e atualizo a view
-     */
-
     beginResetModel();
     m_dataSource = newDataSource;
     qDeleteAll(m_processingData);
@@ -118,35 +107,24 @@ void ProcessingQueueModel::clear()
 
 void ProcessingQueueModel::processing()
 {
-    /*
-     * A ideia aqui é percorrer a lista de itens e chamar a função processing de cada item
-     * Antes disso faço um connect do item no signal progressChanged para poder atualizar o model
-     * E connect do processFinished para remover o item do model
-     * mas não funciona nada :(
-     */
     for(int i = 0; i < m_processingData.count(); ++i) {
+        disconnect(m_processingData[i]);
+
         connect(m_processingData[i], &ProgressData::progressChanged, this, [this, i]{
                 beginResetModel();
-                qInfo() << "update..." << m_processingData[i]->getProgress();
-                // QModelIndex idx;
-                // idx.siblingAtRow(i);
-                // setData(idx, m_processingData.at(i)->getProgress(), ProcessingRoles::Progress);
-                // emit dataChanged(idx, QModelIndex{});
+                qInfo() << "Progress Update..." << m_processingData[i]->getProgress();
+                emit dataChanged(QModelIndex{}, QModelIndex{}, {ProcessingRoles::Progress});
                 endResetModel();
             }, Qt::QueuedConnection);
 
         connect(m_processingData[i], &ProgressData::finishedChanged, this, [this, i]{
                 beginResetModel();
-                qInfo() << "Finished...";
-                QModelIndex idx;
-                // idx.siblingAtRow(i);
-                // setData(idx, m_processingData.at(i)->getProgress(), ProcessingRoles::Progress);
-                emit dataChanged(idx, QModelIndex{}, {ProcessingRoles::Finished});
+                qInfo() << "Progress Finished...";
+                emit dataChanged(QModelIndex{}, QModelIndex{}, {ProcessingRoles::Finished});
                 endResetModel();
             }, Qt::QueuedConnection);
 
         m_processingData[i]->processing();
-
     }
 }
 
