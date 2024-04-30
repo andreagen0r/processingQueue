@@ -33,6 +33,9 @@ QVariant ProcessingQueueModel::data(const QModelIndex &index, int role) const
     case Paused:
         return m_processingData.at(row)->getPaused();
         break;
+    case Finished:
+        return m_processingData.at(row)->finished();
+        break;
     default:
         break;
     }
@@ -46,6 +49,7 @@ QHash<int, QByteArray> ProcessingQueueModel::roleNames() const
                                             {Title, "title"_ba},
                                             {Progress, "progress"_ba},
                                             {Paused, "paused"_ba},
+                                            {Finished, "finished"_ba},
                                             };
 
     return out;
@@ -123,15 +127,29 @@ void ProcessingQueueModel::processing()
     for(int i = 0; i < m_processingData.count(); ++i) {
         connect(m_processingData[i], &ProgressData::progressChanged, this, [this, i]{
                 beginResetModel();
-            qInfo() << "update..." << m_processingData[i]->getProgress();
-            // QModelIndex idx;
-            // idx.siblingAtRow(i);
-            // setData(idx, m_processingData.at(i)->getProgress(), ProcessingRoles::Progress);
-            // emit dataChanged(idx, QModelIndex{});
-            endResetModel();
+                qInfo() << "update..." << m_processingData[i]->getProgress();
+                // QModelIndex idx;
+                // idx.siblingAtRow(i);
+                // setData(idx, m_processingData.at(i)->getProgress(), ProcessingRoles::Progress);
+                // emit dataChanged(idx, QModelIndex{});
+                endResetModel();
+            }, Qt::QueuedConnection);
+
+        connect(m_processingData[i], &ProgressData::finishedChanged, this, [this, i]{
+                beginResetModel();
+                qInfo() << "Finished...";
+                QModelIndex idx;
+                // idx.siblingAtRow(i);
+                // setData(idx, m_processingData.at(i)->getProgress(), ProcessingRoles::Progress);
+                emit dataChanged(idx, QModelIndex{}, {ProcessingRoles::Finished});
+                endResetModel();
             }, Qt::QueuedConnection);
 
         m_processingData[i]->processing();
 
     }
 }
+
+
+
+

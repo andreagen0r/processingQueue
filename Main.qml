@@ -18,6 +18,11 @@ ApplicationWindow {
     dataSource: myModel.outData
   }
 
+  HistoryModel {
+    id: histModel
+    source: queueModel
+  }
+
   ColumnLayout {
     anchors.fill: parent
     anchors.margins: 12
@@ -115,6 +120,7 @@ ApplicationWindow {
             width: lv2.width
             height: 30
             color: "lightblue"
+            visible: !model.finished
 
             RowLayout {
               anchors.fill: parent
@@ -165,7 +171,7 @@ ApplicationWindow {
           spacing: 4
           Layout.fillHeight: true
           Layout.fillWidth: true
-          model: 20
+          model: histModel
           header: Rectangle {
             width: lv3.width
             height: 30
@@ -193,7 +199,7 @@ ApplicationWindow {
                 Layout.leftMargin: 12
                 elide: Text.ElideRight
                 verticalAlignment: Text.AlignVCenter
-                text: `Title asadasd asd asd asd${index}`
+                text: model.title
               }
             }
           }
