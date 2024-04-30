@@ -19,9 +19,10 @@ qt_add_qml_module(appQueueProcessing
         Main.qml
     SOURCES
         mymodel.h mymodel.cpp
-        processingqueuemodel.h processingqueuemodel.cpp
+        # processingqueuemodel.h processingqueuemodel.cpp
         ModelData.h
         historymodel.h historymodel.cpp
+        processingmodel.h processingmodel.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

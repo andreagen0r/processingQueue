@@ -13,14 +13,14 @@ ApplicationWindow {
     id: myModel
   }
 
-  ProcessingQueueModel {
-    id: queueModel
-    dataSource: myModel.outData
+  ProcessingModel {
+    id: processingModel
+    source: myModel
   }
 
   HistoryModel {
     id: histModel
-    source: queueModel
+    source: myModel
   }
 
   ColumnLayout {
@@ -101,7 +101,7 @@ ApplicationWindow {
           spacing: 4
           Layout.fillHeight: true
           Layout.fillWidth: true
-          model: queueModel
+          model: processingModel
           header: Rectangle {
             width: lv3.width
             height: 30
@@ -136,7 +136,10 @@ ApplicationWindow {
               }
               ProgressBar {
                 Layout.fillWidth: true
+                from: 0
+                to: 100
                 value: model.progress
+                onValueChanged: console.log(value)
               }
               Button {
                 Layout.preferredWidth: implicitHeight
@@ -156,7 +159,7 @@ ApplicationWindow {
         Button {
           Layout.fillWidth: true
           text: `Clear`
-          onClicked: queueModel.clear()
+          onClicked: processingModel.clear()
         }
       }
 
