@@ -126,13 +126,19 @@ void MyModel::processing() {
     qInfo() << __PRETTY_FUNCTION__;
 
     for ( auto &i : m_data ) {
+        i->setFinished( false );
+        i->setProcessing( false );
+        i->setProgress( 0.0 );
+    }
+
+    for ( auto &i : m_data ) {
 
         disconnect( i );
 
-        // if ( i->selected() ) {
-        qInfo() << "STARTED:" << i->title();
+        if ( i->selected() ) {
+            qInfo() << "STARTED:" << i->title();
 
-        // clang-format off
+            // clang-format off
 
             connect( i, &ModelData::progressChanged, this, [&]() {
                     beginResetModel();
@@ -151,8 +157,8 @@ void MyModel::processing() {
                     // Q_EMIT dataChanged( QModelIndex {}, QModelIndex {}, { MyRoles::Progress, MyRoles::Finished, MyRoles::Progress } );
                 }, Qt::QueuedConnection );
 
-        // clang-format on
-        // }
+            // clang-format on
+        }
     }
 
     auto future = QtConcurrent::map( m_data, execute );
