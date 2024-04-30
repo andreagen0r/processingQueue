@@ -11,7 +11,7 @@ using namespace Qt::Literals;
 MyModel::MyModel( QObject *parent )
     : QAbstractListModel { parent } {
 
-    for ( auto i = 0; i < 6; ++i ) {
+    for ( auto i = 0; i < 20; ++i ) {
         const quint32 time = QRandomGenerator::global()->bounded( 1000, 5000 );
         m_data << new ModelData( QString( "Title from c++ %1" ).arg( i ), time, false, this );
     }
@@ -148,11 +148,9 @@ void MyModel::processing() {
                 }, Qt::QueuedConnection );
 
             connect( i, &ModelData::isFinishedChanged, this, [&]() {
-                    qInfo() << "FINISHED" << i->title();
+                    // qInfo() << "FINISHED" << i->title();
                     beginResetModel();
                     // i->setFinished( false );
-                    i->setProcessing( false );
-                    i->setProgress( 0 );
                     endResetModel();
                     // Q_EMIT dataChanged( QModelIndex {}, QModelIndex {}, { MyRoles::Progress, MyRoles::Finished, MyRoles::Progress } );
                 }, Qt::QueuedConnection );
