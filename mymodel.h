@@ -20,6 +20,7 @@ public:
         Title = Qt::UserRole + 1,
         Selected,
         ProcessTime,
+        Progress,
     };
     explicit MyModel(QObject *parent = nullptr);
 

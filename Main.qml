@@ -130,7 +130,7 @@ ApplicationWindow {
               }
               ProgressBar {
                 Layout.fillWidth: true
-                value: 50
+                value: model.progress
               }
               Button {
                 Layout.preferredWidth: implicitHeight

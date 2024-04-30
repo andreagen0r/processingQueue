@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QQmlEngine>
 #include <QThread>
+#include <QtConcurrent>
 
 #include "ModelData.h"
 
@@ -12,54 +13,81 @@ class ProgressData : public ModelData {
     Q_OBJECT
     Q_PROPERTY(double progress READ getProgress WRITE setProgress NOTIFY progressChanged FINAL)
     Q_PROPERTY(bool paused READ getPaused WRITE setPaused NOTIFY pausedChanged FINAL)
+    Q_PROPERTY(bool processed READ processed NOTIFY processedChanged FINAL)
 
 public:
     ProgressData(QString title, int processTime, bool selected = false, double progress = 0, bool paused = false, QObject* parent = nullptr)
         : ModelData(title, processTime, selected, parent)
-        , progress(progress)
-        , paused(paused){}
-    double progress;
-    bool paused;
+        , m_progress(progress)
+        , m_paused(paused){
+
+        connect(this, &ProgressData::progressChanged, this, [this]{
+            qInfo() << "Progress:" << m_progress;
+        });
+    }
+
 
     bool getPaused() const
     {
-        return paused;
+        return m_paused;
     }
 
     void setPaused(bool newPaused)
     {
-        if (paused == newPaused)
+        if (m_paused == newPaused)
             return;
-        paused = newPaused;
+        m_paused = newPaused;
         emit pausedChanged();
     }
 
     double getProgress() const
     {
-        return progress;
+        return m_progress;
     }
 
     void setProgress(double newProgress)
     {
-        if (qFuzzyCompare(progress, newProgress))
+        if (qFuzzyCompare(m_progress, newProgress))
             return;
-        progress = newProgress;
+        m_progress = newProgress;
+        qInfo() << "Progress from data:" << m_progress;
         emit progressChanged();
     }
+
+    Q_INVOKABLE void processing()
+    {
+        /*
+         * Crio uma thread para executar o loop e emitir o signal de atualização
+         */
+        auto future = QtConcurrent::run([this]{
+
+            const auto time = ceil(getProcessTime()  / 100.0);
+
+            qInfo() << "Processing..." << getTitle();
+
+            for (auto i = 1; i <= 100; ++i) {
+                setProgress(i);
+                qInfo() << "Sleep for" << time;
+                QThread::sleep(time);
+            }
+
+            qInfo() << "End processing..." << getTitle();
+
+            emit processFinished();
+        });
+    }
+
+    bool processed() const { return m_processed; }
 
 signals:
     void progressChanged();
     void pausedChanged();
-
-protected:
-    void run() override
-    {
-        for (auto i = 0; i <= 100; ++i) {
-            setProgress(i);
-            thread()->sleep(processTime/100);
-        }
-    }
-
+    void processFinished();
+    void processedChanged();
+private:
+    double m_progress;
+    bool m_paused;
+    bool m_processed;
 };
 
 class ProcessingQueueModel : public QAbstractListModel
@@ -87,6 +115,7 @@ public:
     void setDataSource(const QList<ModelData*> &newDataSource);
 
     Q_INVOKABLE void clear();
+    Q_INVOKABLE void processing();
 
 Q_SIGNALS:
     void dataSourceChanged();
@@ -94,6 +123,4 @@ Q_SIGNALS:
 private:
     QList<ProgressData*> m_processingData;
     QList<ModelData*> m_dataSource;
-
-    void heavyProcessingData();
 };
