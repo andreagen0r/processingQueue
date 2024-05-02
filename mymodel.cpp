@@ -7,13 +7,12 @@
 
 using namespace Qt::Literals;
 
-
 MyModel::MyModel( QObject *parent )
     : QAbstractListModel { parent } {
 
     for ( auto i = 0; i < 20; ++i ) {
         const quint32 time = QRandomGenerator::global()->bounded( 1000, 5000 );
-        auto item = new ModelData( QString( "Title from c++ %1" ).arg( i ), time, false, this );
+        auto item = new ModelData( QString( "Picture %1.%2" ).arg( i ).arg( ( i % 2 == 0 ) ? "jpg" : "png" ), time, false, this );
         item->setLastEdit( QDateTime::currentDateTime() );
         m_data << item;
     }
