@@ -13,7 +13,9 @@ MyModel::MyModel( QObject *parent )
 
     for ( auto i = 0; i < 20; ++i ) {
         const quint32 time = QRandomGenerator::global()->bounded( 1000, 5000 );
-        m_data << new ModelData( QString( "Title from c++ %1" ).arg( i ), time, false, this );
+        auto item = new ModelData( QString( "Title from c++ %1" ).arg( i ), time, false, this );
+        item->setLastEdit( QDateTime::currentDateTime() );
+        m_data << item;
     }
 
     // Indicates if there are an item is selected
@@ -54,6 +56,9 @@ QVariant MyModel::data( const QModelIndex &index, int role ) const {
         case Finished:
             return m_data.at( row )->isFinished();
             break;
+        case LastEdit:
+            return m_data.at( row )->lastEdit();
+            break;
         default:
             break;
     }
@@ -87,9 +92,10 @@ bool MyModel::setData( const QModelIndex &index, const QVariant &value, int role
 }
 
 QHash<int, QByteArray> MyModel::roleNames() const {
-    static const QHash<int, QByteArray> out { { Title, "title"_ba },           { Selected, "selected"_ba },
-                                              { Progress, "progress"_ba },     { ProcessTime, "processTime"_ba },
-                                              { Processing, "processing"_ba }, { Finished, "finished"_ba } };
+    static const QHash<int, QByteArray> out {
+        { Title, "title"_ba },           { Selected, "selected"_ba }, { Progress, "progress"_ba }, { ProcessTime, "processTime"_ba },
+        { Processing, "processing"_ba }, { Finished, "finished"_ba }, { LastEdit, "lastEdit"_ba },
+    };
     return out;
 }
 
@@ -99,7 +105,6 @@ bool MyModel::toProcessing() const {
 
 void execute( ModelData *model ) {
 
-    model->setFinished( false );
     model->setProcessing( false );
     model->setProgress( 0.0 );
 
@@ -116,6 +121,7 @@ void execute( ModelData *model ) {
             QThread::msleep( delay );
         }
 
+        model->setLastEdit( QDateTime::currentDateTime() );
         model->setProcessing( false );
         model->setFinished( true );
     }
@@ -126,8 +132,8 @@ void MyModel::processing() {
     qInfo() << __PRETTY_FUNCTION__;
 
     for ( auto &i : m_data ) {
-        i->setFinished( false );
         i->setProcessing( false );
+        i->setFinished( false );
         i->setProgress( 0.0 );
     }
 
@@ -141,18 +147,15 @@ void MyModel::processing() {
             // clang-format off
 
             connect( i, &ModelData::progressChanged, this, [&]() {
-                    beginResetModel();
-                    // qInfo() << "Progress..." << i->progress();
-                    endResetModel();
-                    // Q_EMIT dataChanged( QModelIndex {}, QModelIndex {}, { MyRoles::Progress } );
+                    Q_EMIT layoutChanged();
                 }, Qt::QueuedConnection );
 
             connect( i, &ModelData::isFinishedChanged, this, [&]() {
-                    // qInfo() << "FINISHED" << i->title();
-                    beginResetModel();
-                    // i->setFinished( false );
-                    endResetModel();
-                    // Q_EMIT dataChanged( QModelIndex {}, QModelIndex {}, { MyRoles::Progress, MyRoles::Finished, MyRoles::Progress } );
+                    Q_EMIT layoutChanged();
+                }, Qt::QueuedConnection );
+
+            connect( i, &ModelData::lastEditChanged, this, [&]() {
+                    Q_EMIT layoutChanged();
                 }, Qt::QueuedConnection );
 
             // clang-format on
@@ -160,4 +163,18 @@ void MyModel::processing() {
     }
 
     auto future = QtConcurrent::map( m_data, execute );
+}
+
+void MyModel::unselectAll() {
+    for ( auto &i : m_data ) {
+        i->setSelected( false );
+    }
+    Q_EMIT layoutChanged();
+}
+
+void MyModel::clearHistory() {
+    for ( auto &i : m_data ) {
+        i->setFinished( false );
+    }
+    Q_EMIT layoutChanged();
 }

@@ -2,6 +2,7 @@
 
 #include <QString>
 #include <QObject>
+#include <QDateTime>
 
 class ModelData : public QObject {
 
@@ -13,6 +14,7 @@ class ModelData : public QObject {
     Q_PROPERTY( bool processing READ isProcessing WRITE setProcessing NOTIFY isProcessingChanged FINAL )
     Q_PROPERTY( bool finished READ isFinished WRITE setFinished NOTIFY isFinishedChanged FINAL )
     Q_PROPERTY( double progress READ progress WRITE setProgress NOTIFY progressChanged FINAL )
+    Q_PROPERTY( QDateTime lastEdit READ lastEdit WRITE setLastEdit NOTIFY lastEditChanged FINAL )
 
 public:
     ModelData( QString title, int processTime, bool selected = false, QObject* parent = nullptr )
@@ -86,8 +88,25 @@ public:
         Q_EMIT isFinishedChanged();
     }
 
-    double progress() const;
-    void setProgress( double newProgress );
+    double progress() const {
+        return m_progress;
+    }
+    void setProgress( double newProgress ) {
+        if ( qFuzzyCompare( m_progress, newProgress ) )
+            return;
+        m_progress = newProgress;
+        emit progressChanged();
+    }
+
+    QDateTime lastEdit() const {
+        return m_lastEdit;
+    }
+    void setLastEdit( const QDateTime& newLastEdit ) {
+        if ( m_lastEdit == newLastEdit )
+            return;
+        m_lastEdit = newLastEdit;
+        emit lastEditChanged();
+    }
 
 signals:
     void titleChanged();
@@ -97,6 +116,8 @@ signals:
     void isFinishedChanged();
     void progressChanged();
 
+    void lastEditChanged();
+
 private:
     QString m_title;
     int m_processTime;
@@ -104,15 +125,5 @@ private:
     bool m_processing;
     bool m_finished;
     double m_progress;
+    QDateTime m_lastEdit;
 };
-
-inline double ModelData::progress() const {
-    return m_progress;
-}
-
-inline void ModelData::setProgress( double newProgress ) {
-    if ( qFuzzyCompare( m_progress, newProgress ) )
-        return;
-    m_progress = newProgress;
-    emit progressChanged();
-}

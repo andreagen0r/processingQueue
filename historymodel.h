@@ -5,26 +5,29 @@
 
 class QAbstractItemModel;
 
-class HistoryModel : public QSortFilterProxyModel
-{
+class HistoryModel : public QSortFilterProxyModel {
     Q_OBJECT
     QML_ELEMENT
 
-    Q_PROPERTY(QAbstractItemModel* source WRITE setSource NOTIFY sourceChanged FINAL)
+    Q_PROPERTY( QAbstractItemModel *source WRITE setSource NOTIFY sourceChanged FINAL )
 
 public:
-    explicit HistoryModel(QObject *parent = nullptr);
+    explicit HistoryModel( QObject *parent = nullptr );
 
-    Q_INVOKABLE void setSourceModel(QAbstractItemModel *sourceModel) override;
+    Q_INVOKABLE void setSourceModel( QAbstractItemModel *sourceModel ) override;
 
-    void setSource(QAbstractItemModel *newSource);
+    void setSource( QAbstractItemModel *newSource );
 
 signals:
     void sourceChanged();
 
 protected:
-    bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override;
+    bool filterAcceptsRow( int source_row, const QModelIndex &source_parent ) const override;
 
 private:
     QAbstractItemModel *m_source = nullptr;
+
+    // QSortFilterProxyModel interface
+protected:
+    bool lessThan( const QModelIndex &source_left, const QModelIndex &source_right ) const override;
 };

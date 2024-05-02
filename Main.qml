@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Qt.labs.qmlmodels
 
 ApplicationWindow {
   id: root
@@ -31,10 +32,10 @@ ApplicationWindow {
     RowLayout {
       Layout.fillHeight: true
       Layout.fillWidth: true
-      clip: true
 
       ColumnLayout {
         id: firstCol
+        spacing: 12
         Layout.fillHeight: true
         Layout.fillWidth: true
         Layout.preferredWidth: 33
@@ -42,6 +43,7 @@ ApplicationWindow {
         ListView {
           id: lv1
           spacing: 4
+          clip: true
           Layout.fillHeight: true
           Layout.fillWidth: true
           model: myModel
@@ -55,7 +57,7 @@ ApplicationWindow {
               elide: Text.ElideRight
               verticalAlignment: Text.AlignVCenter
               horizontalAlignment: Text.AlignHCenter
-              text: `Content Items`
+              text: qsTr("Gallery")
             }
           }
           delegate: Rectangle {
@@ -65,10 +67,17 @@ ApplicationWindow {
 
             RowLayout {
               anchors.fill: parent
+              anchors.leftMargin: 12
               spacing: 6
 
               CheckBox {
                 Layout.fillHeight: true
+                horizontalPadding: 0
+                leftInset: 0
+                rightInset: 0
+                leftPadding: 0
+                rightPadding: 0
+                visible: btnSelectMode.checked
                 // Layout.maximumWidth: implicitHeight
                 onCheckedChanged: {
                   model.selected = checked
@@ -87,6 +96,22 @@ ApplicationWindow {
           }
         }
 
+        RowLayout {
+          Layout.fillWidth: true
+
+          Button {
+            id: btnSelectMode
+            checkable: true
+            text: qsTr("Select Mode")
+            onCheckedChanged: {
+              if (!checked) {
+                myModel.unselectAll()
+              }
+            }
+          }
+        }
+
+
       }
 
       ColumnLayout {
@@ -99,6 +124,7 @@ ApplicationWindow {
         ListView {
           id: lv2
           spacing: 4
+          clip: true
           Layout.fillHeight: true
           Layout.fillWidth: true
           model: processingModel
@@ -112,7 +138,7 @@ ApplicationWindow {
               elide: Text.ElideRight
               verticalAlignment: Text.AlignVCenter
               horizontalAlignment: Text.AlignHCenter
-              text: `Processing Queue`
+              text: qsTr("Processing Queue")
             }
           }
 
@@ -142,15 +168,31 @@ ApplicationWindow {
                 // onValueChanged: console.log(value)
               }
               Button {
+                id: btnPause
                 Layout.preferredWidth: implicitHeight
                 Layout.fillHeight: true
                 padding: 0
                 leftPadding: 0
                 rightPadding: 0
                 checkable: true
-                text: model.paused ? "II" : "X"
+                icon.height: 16
+                icon.width: 16
+                icon.source: "qrc:/qt/qml/QueueProcessing/pause.svg"
+              }
 
-                onCheckedChanged: model.paused = checked
+              Button {
+                id: btnCancel
+                Layout.preferredWidth: implicitHeight
+                Layout.fillHeight: true
+                padding: 0
+                leftPadding: 0
+                rightPadding: 0
+                icon.height: 16
+                icon.width: 16
+                icon.source: "qrc:/qt/qml/QueueProcessing/delete.svg"
+                ToolTip.visible: hovered
+                ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
+                ToolTip.text: qsTr("Cancel the job")
               }
             }
           }
@@ -158,7 +200,7 @@ ApplicationWindow {
 
         Button {
           Layout.fillWidth: true
-          text: `Clear`
+          text: qsTr("Clear all")
           onClicked: processingModel.clear()
         }
       }
@@ -172,6 +214,7 @@ ApplicationWindow {
         ListView {
           id: lv3
           spacing: 4
+          clip: true
           Layout.fillHeight: true
           Layout.fillWidth: true
           model: histModel
@@ -185,7 +228,7 @@ ApplicationWindow {
               elide: Text.ElideRight
               verticalAlignment: Text.AlignVCenter
               horizontalAlignment: Text.AlignHCenter
-              text: `Processed itens`
+              text: qsTr("History")
             }
           }
 
@@ -207,15 +250,35 @@ ApplicationWindow {
             }
           }
         }
+
+        Button {
+          Layout.fillWidth: true
+          text: qsTr("Clear History")
+          onClicked: myModel.clearHistory()
+        }
       }
     }
 
-    Button {
+    RowLayout {
       Layout.fillWidth: true
-      enabled: myModel.toProcessing
-      text: "Processing"
+      ProgressBar {
+        Layout.fillWidth: true
+        from: 0
+        to: 100
+        value: 20
+      }
 
-      onClicked: myModel.processing()
+      Button {
+        // Layout.fillWidth: true
+        enabled: myModel.toProcessing
+        text: qsTr("Processing")
+
+        onClicked: {
+          myModel.processing()
+        }
+      }
     }
+
+
   }
 }

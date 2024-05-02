@@ -21,6 +21,7 @@ public:
         ProcessTime,
         Processing,
         Finished,
+        LastEdit,
     };
     explicit MyModel( QObject *parent = nullptr );
 
@@ -32,6 +33,8 @@ public:
     bool toProcessing() const;
 
     Q_INVOKABLE void processing();
+    Q_INVOKABLE void unselectAll();
+    Q_INVOKABLE void clearHistory();
 
 Q_SIGNALS:
     void toProcessingChanged();

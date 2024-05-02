@@ -17,6 +17,9 @@ qt_add_qml_module(appQueueProcessing
     VERSION 1.0
     QML_FILES
         Main.qml
+    RESOURCES
+        pause.svg
+        delete.svg
     SOURCES
         mymodel.h mymodel.cpp
         # processingqueuemodel.h processingqueuemodel.cpp
