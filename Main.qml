@@ -261,11 +261,15 @@ ApplicationWindow {
 
     RowLayout {
       Layout.fillWidth: true
+
       ProgressBar {
         Layout.fillWidth: true
         from: 0
-        to: 100
-        value: 20
+        to: myModel.selectedCount
+        value: myModel.finishedCount
+
+        Behavior on value { NumberAnimation {duration: 250} }
+
       }
 
       Button {

@@ -130,7 +130,15 @@ void MyModel::processing() {
 
     qInfo() << __PRETTY_FUNCTION__;
 
+    m_selectedCount = 0;
+    m_finishedCount = 0;
+
     for ( auto &i : m_data ) {
+
+        if ( i->selected() ) {
+            m_selectedCount++;
+            Q_EMIT selectedCountChanged();
+        }
         i->setProcessing( false );
         i->setFinished( false );
         i->setProgress( 0.0 );
@@ -150,6 +158,8 @@ void MyModel::processing() {
                 }, Qt::QueuedConnection );
 
             connect( i, &ModelData::isFinishedChanged, this, [&]() {
+                    m_finishedCount++;
+                    Q_EMIT finishedCountChanged();
                     Q_EMIT layoutChanged();
                 }, Qt::QueuedConnection );
 
@@ -168,6 +178,8 @@ void MyModel::unselectAll() {
     for ( auto &i : m_data ) {
         i->setSelected( false );
     }
+    m_selectedCount = 0;
+    Q_EMIT selectedCountChanged();
     Q_EMIT layoutChanged();
 }
 
@@ -176,4 +188,12 @@ void MyModel::clearHistory() {
         i->setFinished( false );
     }
     Q_EMIT layoutChanged();
+}
+
+int MyModel::selectedCount() const {
+    return m_selectedCount;
+}
+
+int MyModel::finishedCount() const {
+    return m_finishedCount;
 }

@@ -12,6 +12,8 @@ class MyModel : public QAbstractListModel {
     QML_ELEMENT
 
     Q_PROPERTY( bool toProcessing READ toProcessing NOTIFY toProcessingChanged FINAL )
+    Q_PROPERTY( int selectedCount READ selectedCount NOTIFY selectedCountChanged FINAL )
+    Q_PROPERTY( int finishedCount READ finishedCount NOTIFY finishedCountChanged FINAL )
 
 public:
     enum MyRoles {
@@ -36,10 +38,20 @@ public:
     Q_INVOKABLE void unselectAll();
     Q_INVOKABLE void clearHistory();
 
+    int selectedCount() const;
+
+    int finishedCount() const;
+
 Q_SIGNALS:
     void toProcessingChanged();
+
+    void selectedCountChanged();
+
+    void finishedCountChanged();
 
 private:
     QList<ModelData *> m_data;
     bool m_toProcessing;
+    int m_selectedCount;
+    int m_finishedCount;
 };
