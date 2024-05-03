@@ -153,6 +153,10 @@ void MyModel::processing() {
 
             // clang-format off
 
+            connect( i, &ModelData::isProcessingChanged, this, [&]() {
+                    Q_EMIT layoutChanged();
+                }, Qt::QueuedConnection );
+
             connect( i, &ModelData::progressChanged, this, [&]() {
                     Q_EMIT layoutChanged();
                 }, Qt::QueuedConnection );
@@ -172,6 +176,7 @@ void MyModel::processing() {
     }
 
     auto future = QtConcurrent::map( m_data, execute );
+    Q_EMIT layoutChanged();
 }
 
 void MyModel::unselectAll() {
